@@ -37,7 +37,7 @@ for starCounter = 2:numSplitFiles
         load Sun/widthsOffsetsSun
         save widths.mat widths
     end
-    fitHD
+    fit2
     clearvars -except starCounter stars rvShift numSplitFiles
 end
 
@@ -51,7 +51,7 @@ grabQuads
     
 postProcess
     
-meunierRBNew    
+meunierRB   
 synthTest
     
     

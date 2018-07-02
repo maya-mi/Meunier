@@ -1,4 +1,12 @@
 load labels
+%Fits second degree polynomials of the form @(b, x)(b(1) + b(2)*(x - b(3)).^2)
+%to theoretical line center (unlike fit2, no offset is applied). Saves fit
+%results in "q" (nObs by nLines by 3, with the 3 entries corresponding to
+%b(1), b(2), and b(3)); "e" which has error results of same dimensions and
+%entries; "r" which gives a reduced chi squared (size nObs by nLines); and
+%m, nObs by nLines by 2, which has the wavelength value and intensity value
+%for the line center per calculated fit. 
+
 for sC = 1 : length(stars)
     starName = stars{sC};
     load(strcat(starName, '/fitResults', starName, '.mat'))
@@ -12,7 +20,6 @@ for sC = 1 : length(stars)
     % finalDays = length(edges);
     %Use custom fit for gaussian + vertical shift
     qfit = @(b, x)(b(1) + b(2)*(x - b(3)).^2);
-    slopeFit = @(b, x)(b(1) + b(2)*(x - b(4)).^2 + b(3)*(x - b(4)));
 
     %Pre-designating fit vars
     nNights = length(uniqueNights);
@@ -20,11 +27,6 @@ for sC = 1 : length(stars)
     e = zeros(nNights, nLines, 3); 
     r = zeros(nNights, nLines);
     m = zeros(nNights, nLines, 2);
-
-    qSlope = zeros(nNights, nLines, 4);
-    eQ = zeros(nNights, nLines, 4);
-    rQ = zeros(nNights, nLines);
-    mQ = zeros(nNights, nLines, 2);
 
 
     for i = 1:length(uniqueNights)
@@ -64,24 +66,11 @@ for sC = 1 : length(stars)
                 [x, fval] = fminbnd(qfn, min(fitX), max(fitX));
                 m(i, j, :) = [x, fval];
                 
-
-                b0Q = [mn, 1, 0, 0];
-                [qSlope(i, j, :), ~, ~, cov, ~, ~] = nlinfit(fitX, fitY, slopeFit, b0Q, 'Weights', (1 ./ errSq));
-                eQ(i, j, :) = sqrt(diag(cov));
-                model = qfit(q(i, j, :), fitX);
-                chisqQ = sum((fitY - model) .^2 ./ errSq);
-                qfnS = @(x)(squeeze(qSlope(i, j, 1)) + squeeze(qSlope(i, j, 2))*(x - squeeze(qSlope(i, j, 4))).^2 + squeeze(qSlope(i, j, 3))*(x - squeeze(qSlope(i, j, 4))));
-                rQ(i, j) = chisqQ ./ (length(fitX) - length(b0Q));
-                [x, fval] = fminbnd(qfnS, min(fitX), max(fitX));
-                mQ(i, j, :) = [x, fval];
-
             catch
                 q(i, j, :) = nan;
                 e(i, j, :) = nan;
                 r(i, j) = nan;
-                qSlope(i, j, :) = nan;
-                eQ(i, j, :) = nan;
-                rQ(i, j) = nan;
+                m(i, j, :) = nan;
 
             end
 
@@ -91,7 +80,6 @@ for sC = 1 : length(stars)
     end
 
 
-    save(strcat(starName, '/quadFit', starName, '.mat'), 'q', 'e', 'r', 'qSlope', 'eQ', 'rQ');
-    %save('fitResultsHD.mat', 'f', 'errFit', 'chisq', 'reduced', 'ironA')
+    save(strcat(starName, '/quadFit', starName, '.mat'), 'q', 'e', 'r', 'm');
     clearvars -except starCounter stars
 end

@@ -12,10 +12,9 @@ titles = {'.1 < Rel. Depth < .3', '.3 < Rel. Depth < .5', '.5 < Rel. Depth < .7'
 for depthBin = 4:length(edges) - 1
     dF = edges(depthBin) < relDepths & relDepths < edges(depthBin + 1);
     F = dF & rF & cF;
-    % [~, In] = sort(reduced(F));
-    % lineIndices = find(F);
-    % j = lineIndices(In(6));
-    [~, j] = min(abs(ironA - 6173.3));
+    %To perform for individual line, comment lines 13 and 14 and uncomment16 and 17: 
+%     lineOfInterest = 6173.3;
+%     [~, F] = min(abs(ironA - lineOfInterest));
 
     X = bX(:, F, :);
     Y = bY(:, F, :);
@@ -24,20 +23,6 @@ for depthBin = 4:length(edges) - 1
 
     x = squeeze(ser);
     y = squeeze(nanmean(Y));
-
-    % spans = bisectSpanAll(:, j);
-    % spanErr = sTot(:, j);
-
-    %load line6173
-
-    % figure; plot(grid, lineProf,'k', 'LineWidth', 3)
-    % hold on
-    % plot(nanmean(x), nanmean(y), 'k--')
-    % title('Line Profile: 6173.3 A')
-    % xlabel('Wavelength (angstroms)')
-    % ylabel('Normalized intensity')
-
-    %figure; errorbar(x(1, :), y(1, :), err(1, :))
 
     [coeff,score,latent,tsquared,explained,mu] = pca(x);
 
